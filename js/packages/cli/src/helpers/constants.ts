@@ -1,18 +1,11 @@
 import { PublicKey } from '@solana/web3.js';
 export const CANDY_MACHINE = 'candy_machine';
-export const AUCTION_HOUSE = 'auction_house';
-export const TOKEN_ENTANGLER = 'token_entangler';
-export const ESCROW = 'escrow';
-export const A = 'A';
-export const B = 'B';
-export const FEE_PAYER = 'fee_payer';
-export const TREASURY = 'treasury';
 export const MAX_NAME_LENGTH = 32;
 export const MAX_URI_LENGTH = 200;
 export const MAX_SYMBOL_LENGTH = 10;
 export const MAX_CREATOR_LEN = 32 + 1 + 1;
 export const ARWEAVE_PAYMENT_WALLET = new PublicKey(
-  '6FKvsq4ydWFci6nGq9ckbjYMtnmaqAoatz5c9XWjiDuS',
+  'HvwC9QSAzvGXhhVrgPmauVwFWcYZhne3hVot9EbHuFTm',
 );
 export const CANDY_MACHINE_PROGRAM_ID = new PublicKey(
   'cndyAnrLdpjq1Ssp1z8xxDsB8dxe7u4HL5Nxi2K5WXZ',
@@ -29,22 +22,6 @@ export const TOKEN_PROGRAM_ID = new PublicKey(
 export const FAIR_LAUNCH_PROGRAM_ID = new PublicKey(
   'faircnAB9k59Y4TXmLabBULeuTLgV7TkGMGNkjnA15j',
 );
-export const AUCTION_HOUSE_PROGRAM_ID = new PublicKey(
-  'hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk',
-);
-export const TOKEN_ENTANGLEMENT_PROGRAM_ID = new PublicKey(
-  'qntmGodpGkrM42mN68VCZHXnKqDCT8rdY23wFcXCLPd',
-);
-export const WRAPPED_SOL_MINT = new PublicKey(
-  'So11111111111111111111111111111111111111112',
-);
-export const GUMDROP_DISTRIBUTOR_ID = new PublicKey(
-  'gdrpGjVffourzkdDRrQmySw4aTHr8a3xmQzzxSwFD1a'
-);
-export const GUMDROP_TEMPORAL_SIGNER = new PublicKey(
-  'MSv9H2sMceAzccBganUXwGq3GXgqYAstmZAbFDZYbAV'
-);
-
 export const CONFIG_ARRAY_START =
   32 + // authority
   4 +
@@ -66,4 +43,15 @@ export const CACHE_PATH = './.cache';
 export const DEFAULT_TIMEOUT = 15000;
 
 export const EXTENSION_PNG = '.png';
+export const EXTENSION_GIF = '.gif';
+export const EXTENSION_JPEG = ['.jpeg', '.jpg', '.jfif', '.pjpeg', '.pjp']
+export const EXTENSION_AVI = '.avi';
 export const EXTENSION_JSON = '.json';
+export const EXTENSION_MP4 = ['.mp4', '.m4a']
+export const EXTENSION_WMV = '.wmv';
+export const MIMETYPE_PNG = 'image/png';
+export const MIMETYPE_GIF = 'image/gif';
+export const MIMETYPE_JPEG = 'image/jpeg';
+export const MIMETYPE_MP4 = 'video/mp4';
+export const MIMETYPE_WMV = 'video/x-ms-wmv';
+export const MIMETYPE_AVI = 'video/x-msvideo';
