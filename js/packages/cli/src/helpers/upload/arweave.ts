@@ -1,57 +1,53 @@
 import * as anchor from '@project-serum/anchor';
 import FormData from 'form-data';
 import fs from 'fs';
-import path from 'path';
 import log from 'loglevel';
 import fetch from 'node-fetch';
-import { stat } from 'fs/promises';
-import { calculate } from '@metaplex/arweave-cost';
-import { ARWEAVE_PAYMENT_WALLET } from '../constants';
+import { ARWEAVE_PAYMENT_WALLET, EXTENSION_AVI, EXTENSION_GIF, EXTENSION_JPEG, EXTENSION_MP4, EXTENSION_PNG, EXTENSION_WMV, MIMETYPE_AVI, MIMETYPE_GIF, MIMETYPE_JPEG, MIMETYPE_MP4, MIMETYPE_PNG, MIMETYPE_WMV } from '../constants';
 import { sendTransactionWithRetryWithKeypair } from '../transactions';
-
-const ARWEAVE_UPLOAD_ENDPOINT =
-  'https://us-central1-metaplex-studios.cloudfunctions.net/uploadFile';
-
-async function fetchAssetCostToStore(fileSizes: number[]) {
-  const result = await calculate(fileSizes);
-  log.debug('Arweave cost estimates:', result);
-
-  return result.solana * anchor.web3.LAMPORTS_PER_SOL;
-}
 
 async function upload(data: FormData, manifest, index) {
   log.debug(`trying to upload ${index}.png: ${manifest.name}`);
   return await (
-    await fetch(ARWEAVE_UPLOAD_ENDPOINT, {
-      method: 'POST',
-      // @ts-ignore
-      body: data,
-    })
+    await fetch(
+      'https://us-central1-principal-lane-200702.cloudfunctions.net/uploadFile4',
+      {
+        method: 'POST',
+        // @ts-ignore
+        body: data,
+      },
+    )
   ).json();
 }
 
-function estimateManifestSize(filenames: string[]) {
-  const paths = {};
-
-  for (const name of filenames) {
-    paths[name] = {
-      id: 'artestaC_testsEaEmAGFtestEGtestmMGmgMGAV438',
-      ext: path.extname(name).replace('.', ''),
-    };
-  }
-
-  const manifest = {
-    manifest: 'arweave/paths',
-    version: '0.1.0',
-    paths,
-    index: {
-      path: 'metadata.json',
-    },
+function appendData(image){
+  var res = {
+    filename: '',
+    contentType: ''
   };
-
-  const data = Buffer.from(JSON.stringify(manifest), 'utf8');
-  log.debug('Estimated manifest size:', data.length);
-  return data.length;
+  if(image.endsWith(EXTENSION_PNG)){
+    res.filename = 'image'+ EXTENSION_PNG;
+    res.contentType = MIMETYPE_PNG;
+  }else if(image.endsWith(EXTENSION_GIF)){
+    res.filename = 'image' + EXTENSION_GIF;
+    res.contentType = MIMETYPE_GIF;
+  }else if(image.endsWith(EXTENSION_AVI)){
+    res.filename = 'image' + EXTENSION_AVI;
+    res.contentType = MIMETYPE_AVI;
+  }else if(image.endsWith(EXTENSION_WMV)){
+    res.filename = 'image' + EXTENSION_WMV;
+    res.contentType = MIMETYPE_WMV;
+  }else{
+    var ext = image.split('.')[1];
+    if(EXTENSION_MP4.includes(ext)){
+      res.filename = 'image.' + ext;
+      res.contentType = MIMETYPE_MP4;
+    }else if(EXTENSION_JPEG.includes(ext)){
+      res.filename = 'image.' + ext;
+      res.contentType = MIMETYPE_JPEG;
+    }
+  }
+  return res;
 }
 
 export async function arweaveUpload(
@@ -59,21 +55,11 @@ export async function arweaveUpload(
   anchorProgram,
   env,
   image,
-  manifestBuffer, // TODO rename metadataBuffer
-  manifest, // TODO rename metadata
+  manifestBuffer,
+  manifest,
   index,
 ) {
-  const fsStat = await stat(image);
-  const estimatedManifestSize = estimateManifestSize([
-    'image.png',
-    'metadata.json',
-  ]);
-  const storageCost = await fetchAssetCostToStore([
-    fsStat.size,
-    manifestBuffer.length,
-    estimatedManifestSize,
-  ]);
-  log.debug(`lamport cost to store ${image}: ${storageCost}`);
+  const storageCost = 10;
 
   const instructions = [
     anchor.web3.SystemProgram.transfer({
@@ -88,16 +74,17 @@ export async function arweaveUpload(
     walletKeyPair,
     instructions,
     [],
-    'confirmed',
+    'single',
   );
-  log.debug(`solana transaction (${env}) for arweave payment:`, tx);
+  log.debug('transaction for arweave payment:', tx);
 
   const data = new FormData();
   data.append('transaction', tx['txid']);
   data.append('env', env);
+  var fileAttrs = appendData(image);
   data.append('file[]', fs.createReadStream(image), {
-    filename: `image.png`,
-    contentType: 'image/png',
+    filename: fileAttrs.filename,
+    contentType: fileAttrs.contentType,
   });
   data.append('file[]', manifestBuffer, 'metadata.json');
 
@@ -106,12 +93,10 @@ export async function arweaveUpload(
   const metadataFile = result.messages?.find(
     m => m.filename === 'manifest.json',
   );
-  const imageFile = result.messages?.find(m => m.filename === 'image.png');
   if (metadataFile?.transactionId) {
     const link = `https://arweave.net/${metadataFile.transactionId}`;
-    const imageLink = `https://arweave.net/${imageFile.transactionId}?ext=png`;
     log.debug(`File uploaded: ${link}`);
-    return [link, imageLink];
+    return link;
   } else {
     // @todo improve
     throw new Error(`No transaction ID for upload: ${index}`);
